@@ -188,6 +188,7 @@ public class PulsarClientImpl implements PulsarClient {
             this.createdExecutorProviders = externalExecutorProvider == null;
             this.createdScheduledProviders = scheduledExecutorProvider == null;
             eventLoopGroupReference = eventLoopGroup != null ? eventLoopGroup : getEventLoopGroup(conf);
+            // 创建连接用
             this.eventLoopGroup = eventLoopGroupReference;
             if (conf == null || isBlank(conf.getServiceUrl())) {
                 throw new PulsarClientException.InvalidConfigurationException("Invalid client configuration");
@@ -197,9 +198,12 @@ public class PulsarClientImpl implements PulsarClient {
             conf.getAuthentication().start();
             connectionPoolReference =
                     connectionPool != null ? connectionPool : new ConnectionPool(conf, this.eventLoopGroup);
+            // 连接池，是通过eventLoopGroup
             this.cnxPool = connectionPoolReference;
+            // 主要是调用用户接收消息的回调方法时由internalExecutorService切换为externalExecutorProvider
             this.externalExecutorProvider = externalExecutorProvider != null ? externalExecutorProvider :
                     new ExecutorProvider(conf.getNumListenerThreads(), "pulsar-external-listener");
+            // 主要是消费者接收服务端消息用
             this.internalExecutorProvider = internalExecutorProvider != null ? internalExecutorProvider :
                     new ExecutorProvider(conf.getNumIoThreads(), "pulsar-client-internal");
             this.scheduledExecutorProvider = scheduledExecutorProvider != null ? scheduledExecutorProvider :
@@ -210,6 +214,7 @@ public class PulsarClientImpl implements PulsarClient {
                 lookup = new BinaryProtoLookupService(this, conf.getServiceUrl(), conf.getListenerName(),
                         conf.isUseTls(), this.scheduledExecutorProvider.getExecutor());
             }
+            //延迟任务
             if (timer == null) {
                 this.timer = new HashedWheelTimer(getThreadFactory("pulsar-timer"), 1, TimeUnit.MILLISECONDS);
                 needStopTimer = true;

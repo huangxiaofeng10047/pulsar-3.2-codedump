@@ -340,7 +340,6 @@ services:
       clusterName: test
       zookeeperServers: zk1:2181,zk2:2181,zk3:2181
       # Requires PF_ prefix for some reason in the code
-      PF_pulsarFunctionsCluster: test
       PF_workerId: fnc1
       PF_pulsarFunctionsCluster: test
       # This setting does not appear to accept more than one host
